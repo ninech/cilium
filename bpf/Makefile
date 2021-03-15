@@ -172,11 +172,17 @@ HOST_OPTIONS = $(LXC_OPTIONS) \
 
 ifndef MAX_HOST_OPTIONS
 MAX_HOST_OPTIONS = $(MAX_BASE_OPTIONS) -DENCAP_IFINDEX=1 -DTUNNEL_MODE=1
+endif
 
 # Egress Gateway should only be enabled for >= 5.2 kernels
 ifneq (,$(filter $(KERNEL),"54" "netnext"))
 MAX_HOST_OPTIONS += -DENABLE_EGRESS_GATEWAY=1
 endif
+
+ifeq ("$(KERNEL)","54")
+MAX_HOST_OPTIONS += -DNETFILTER_COMPAT_MODE=1
+else ifeq ("$(KERNEL)","netnext")
+MAX_HOST_OPTIONS += -DNETFILTER_COMPAT_MODE=1
 endif
 
 bpf_host.ll: bpf_host.c $(LIB)

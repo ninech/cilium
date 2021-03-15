@@ -137,7 +137,7 @@ type MapTypes struct {
 	HaveStackMapType               bool `json:"have_stack_map_type"`
 }
 
-// Kernel misc configurations kernel large 1M instructions support
+// Misc contains bools exposing miscellaneous eBPF features.
 type Misc struct {
 	HaveLargeInsnLimit bool `json:"have_large_insn_limit"`
 }
@@ -323,9 +323,9 @@ func (p *ProbeManager) GetMapTypes() *MapTypes {
 	return &p.features.MapTypes
 }
 
-// GetMisc returns information about kernel misc.
-func (p *ProbeManager) GetMisc() Misc {
-	return p.features.Misc
+// GetMisc returns information about miscellaneous eBPF features.
+func (p *ProbeManager) GetMisc() *Misc {
+	return &p.features.Misc
 }
 
 // GetHelpers returns information about available BPF helpers for the given

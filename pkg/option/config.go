@@ -985,6 +985,13 @@ const (
 	// within IPAM upon endpoint restore and allows the use of the restored IP
 	// regardless of whether it's available in the pool.
 	BypassIPAvailabilityUponRestore = "bypass-ip-availability-upon-restore"
+
+	// VLANBPFBypass instructs Cilium to bypass bpf logic for vlan tagged packets
+	VLANBPFBypass = "vlan-bpf-bypass"
+
+	// NetfilterCompatibleMode guarantees the traffic to pass through kernel
+	// netfilter.
+	NetfilterCompatibleMode = "netfilter-compatible-mode"
 )
 
 // Default string arguments
@@ -1687,6 +1694,10 @@ type DaemonConfig struct {
 
 	// EnableHostLegacyRouting enables the old routing path via stack.
 	EnableHostLegacyRouting bool
+
+	// NetfilterCompatibleMode guarantees the traffic to pass through kernel
+	// netfilter.
+	NetfilterCompatibleMode bool
 
 	// NodePortMode indicates in which mode NodePort implementation should run
 	// ("snat", "dsr" or "hybrid")
@@ -2468,6 +2479,7 @@ func (c *DaemonConfig) Populate() {
 	c.EnableHostLegacyRouting = viper.GetBool(EnableHostLegacyRouting)
 	c.MaglevTableSize = viper.GetInt(MaglevTableSize)
 	c.MaglevHashSeed = viper.GetString(MaglevHashSeed)
+	c.NetfilterCompatibleMode = viper.GetBool(NetfilterCompatibleMode)
 	c.NodePortBindProtection = viper.GetBool(NodePortBindProtection)
 	c.EnableAutoProtectNodePortRange = viper.GetBool(EnableAutoProtectNodePortRange)
 	c.KubeProxyReplacement = viper.GetString(KubeProxyReplacement)
