@@ -323,7 +323,7 @@ func (p *ProbeManager) GetMapTypes() *MapTypes {
 	return &p.features.MapTypes
 }
 
-// GetMisc returns information about kernel misc.
+// GetMisc returns information about miscellaneous eBPF features.
 func (p *ProbeManager) GetMisc() Misc {
 	return p.features.Misc
 }

@@ -763,6 +763,10 @@ data:
   unmanaged-pod-watcher-interval: "0"
 {{- end }}
 
+{{- if hasKey .Values "netfilterCompatMode" }}
+  netfilter-compatible-mode: {{ .Values.netfilterCompatMode | quote }}
+{{- end }}
+
 {{- if .Values.extraConfig }}
 {{ toYaml .Values.extraConfig | indent 2 }}
 {{- end }}

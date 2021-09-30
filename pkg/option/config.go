@@ -989,6 +989,14 @@ const (
 	// within IPAM upon endpoint restore and allows the use of the restored IP
 	// regardless of whether it's available in the pool.
 	BypassIPAvailabilityUponRestore = "bypass-ip-availability-upon-restore"
+
+	// EnableK8sTerminatingEndpoint enables the option to auto detect terminating
+	// state for endpoints in order to support graceful termination.
+	EnableK8sTerminatingEndpoint = "enable-k8s-terminating-endpoint"
+
+	// NetfilterCompatibleMode guarantees the traffic will pass through kernel
+	// netfilter. This option only affects NodePort traffic.
+	NetfilterCompatibleMode = "netfilter-compatible-mode"
 )
 
 // Default string arguments
@@ -1706,6 +1714,10 @@ type DaemonConfig struct {
 
 	// EnableHostLegacyRouting enables the old routing path via stack.
 	EnableHostLegacyRouting bool
+
+	// NetfilterCompatibleMode guarantees the traffic will pass through kernel
+	// netfilter. Currently, it only affects NodePort traffic.
+	NetfilterCompatibleMode bool
 
 	// NodePortMode indicates in which mode NodePort implementation should run
 	// ("snat", "dsr" or "hybrid")
@@ -2606,6 +2618,7 @@ func (c *DaemonConfig) Populate() {
 	c.BGPAnnounceLBIP = viper.GetBool(BGPAnnounceLBIP)
 	c.BGPConfigPath = viper.GetString(BGPConfigPath)
 	c.ExternalClusterIP = viper.GetBool(ExternalClusterIPName)
+	c.NetfilterCompatibleMode = viper.GetBool(NetfilterCompatibleMode)
 
 	err = c.populateMasqueradingSettings()
 	if err != nil {

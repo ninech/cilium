@@ -997,7 +997,11 @@ enableIPv6Masquerade: true
 egressGateway:
   enabled: false
 
-# -- Specify the CIDR for native routing (ie to avoid IP masquerade for).
+# -- Enable the netfilter compatible mode, guarantees only nodeport
+# traffic will pass through netfilter.
+netfilterCompatMode: false
+
+# -- Specify the IPv4 CIDR for native routing (ie to avoid IP masquerade for).
 # This value corresponds to the configured cluster-cidr.
 # nativeRoutingCIDR:
 
