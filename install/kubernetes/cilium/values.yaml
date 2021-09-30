@@ -1215,7 +1215,6 @@ vtep:
 # -- Enables VXLAN Tunnel Endpoint (VTEP) Integration (beta) to allow
 # Cilium-managed pods to talk to third party VTEP devices over Cilium tunnel.
   enabled: false
-
 # -- A space separated list of VTEP device endpoint IPs, for example "1.1.1.1  1.1.2.1"
   endpoint: ""
 # -- A space separated list of VTEP device CIDRs, for example "1.1.1.0/24 1.1.2.0/24"
@@ -1224,6 +1223,15 @@ vtep:
   mask: ""
 # -- A space separated list of VTEP device MAC addresses (VTEP MAC), for example "x:x:x:x:x:x  y:y:y:y:y:y:y"
   mac: ""
+
+# -- Enable the netfilter compatible mode, guarantees only nodeport
+# traffic will pass through netfilter.
+netfilterCompatMode: false
+
+# -- Specify the IPv4 CIDR for native routing (ie to avoid IP masquerade for).
+# This value corresponds to the configured cluster-cidr.
+# Deprecated in favor of ipv4NativeRoutingCIDR, will be removed in 1.12.
+# nativeRoutingCIDR:
 
 # -- Allows to explicitly specify the IPv4 CIDR for native routing.
 # When specified, Cilium assumes networking for this CIDR is preconfigured and

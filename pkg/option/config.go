@@ -1082,6 +1082,10 @@ const (
 	// EnableRuntimeDeviceDetection is the name of the option to enable detection
 	// of new and removed datapath devices during the agent runtime.
 	EnableRuntimeDeviceDetection = "enable-runtime-device-detection"
+
+	// NetfilterCompatibleMode guarantees the traffic will pass through kernel
+	// netfilter. This option only affects NodePort traffic.
+	NetfilterCompatibleMode = "netfilter-compatible-mode"
 )
 
 // Default string arguments
@@ -1845,6 +1849,10 @@ type DaemonConfig struct {
 
 	// NodePortNat46X64 indicates whether NAT46 / NAT64 can be used.
 	NodePortNat46X64 bool
+
+	// NetfilterCompatibleMode guarantees the traffic will pass through kernel
+	// netfilter. Currently, it only affects NodePort traffic.
+	NetfilterCompatibleMode bool
 
 	// NodePortMode indicates in which mode NodePort implementation should run
 	// ("snat", "dsr" or "hybrid")
@@ -2929,6 +2937,7 @@ func (c *DaemonConfig) Populate() {
 	c.BGPConfigPath = viper.GetString(BGPConfigPath)
 	c.ExternalClusterIP = viper.GetBool(ExternalClusterIPName)
 	c.TCFilterPriority = viper.GetInt(TCFilterPriority)
+	c.NetfilterCompatibleMode = viper.GetBool(NetfilterCompatibleMode)
 
 	c.EnableIPv4Masquerade = viper.GetBool(EnableIPv4Masquerade) && c.EnableIPv4
 	c.EnableIPv6Masquerade = viper.GetBool(EnableIPv6Masquerade) && c.EnableIPv6

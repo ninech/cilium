@@ -873,6 +873,9 @@ data:
   dns-policy-unload-on-shutdown: {{.Values.dnsPolicyUnloadOnShutdown | quote }}
 {{- end }}
 
+{{- if hasKey .Values "netfilterCompatMode" }}
+  netfilter-compatible-mode: {{ .Values.netfilterCompatMode | quote }}
+
 {{- if .Values.annotateK8sNode }}
   annotate-k8s-node: "true"
 {{- end }}
