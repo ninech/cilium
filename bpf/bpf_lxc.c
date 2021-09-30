@@ -280,19 +280,25 @@ ct_recreate6:
 		policy_mark_skip(ctx);
 
 #ifdef ENABLE_NODEPORT
+#ifdef NETFILTER_COMPAT_MODE
+		if (ct_state.node_port) {
+			return CTX_ACT_OK;
+		}
+#endif /* NETFILTER_COMPAT_MODE */
+
+# ifdef ENABLE_DSR
+		if (ct_state.dsr) {
+			ret = xlate_dsr_v6(ctx, tuple, l4_off);
+			if (ret != 0)
+				return ret;
+		} else
+# endif /* ENABLE_DSR */
 		/* See comment in handle_ipv4_from_lxc(). */
 		if (ct_state.node_port) {
 			ctx->tc_index |= TC_INDEX_F_SKIP_RECIRCULATION;
 			ep_tail_call(ctx, CILIUM_CALL_IPV6_NODEPORT_REVNAT);
 			return DROP_MISSED_TAIL_CALL;
 		}
-# ifdef ENABLE_DSR
-		if (ct_state.dsr) {
-			ret = xlate_dsr_v6(ctx, tuple, l4_off);
-			if (ret != 0)
-				return ret;
-		}
-# endif /* ENABLE_DSR */
 #endif /* ENABLE_NODEPORT */
 		if (ct_state.rev_nat_index) {
 			ret = lb6_rev_nat(ctx, l4_off, &csum_off,
@@ -713,6 +719,23 @@ ct_recreate4:
 		policy_mark_skip(ctx);
 
 #ifdef ENABLE_NODEPORT
+#ifdef NETFILTER_COMPAT_MODE
+		if (ct_state.node_port) {
+			/* Pass the packet to the stack and let bpf_host perform
+			 * rev-DNAT at egress of the native device.
+			 */
+			return CTX_ACT_OK;
+		}
+#endif /* NETFILTER_COMPAT_MODE */
+
+# ifdef ENABLE_DSR
+		if (ct_state.dsr) {
+			ret = xlate_dsr_v4(ctx, &tuple, l4_off, has_l4_header);
+			if (ret != 0)
+				return ret;
+		} else
+# endif /* ENABLE_DSR */
+
 		/* This handles reply traffic for the case where the nodeport EP
 		 * is local to the node. We'll redirect to bpf_host egress to
 		 * perform the reverse DNAT.
@@ -722,13 +745,7 @@ ct_recreate4:
 			ep_tail_call(ctx, CILIUM_CALL_IPV4_NODEPORT_REVNAT);
 			return DROP_MISSED_TAIL_CALL;
 		}
-# ifdef ENABLE_DSR
-		if (ct_state.dsr) {
-			ret = xlate_dsr_v4(ctx, &tuple, l4_off, has_l4_header);
-			if (ret != 0)
-				return ret;
-		}
-# endif /* ENABLE_DSR */
+
 #endif /* ENABLE_NODEPORT */
 
 		if (ct_state.rev_nat_index) {
