@@ -672,6 +672,7 @@ netdevice
 netdevices
 netdevsim
 netfilter
+netfilterCompatMode
 netns
 netperf
 netsec
