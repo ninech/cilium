@@ -1318,3 +1318,49 @@ func testDSR(kubectl *helpers.Kubectl, ni *nodesInfo, sourcePortForCTGCtest int)
 	res = kubectl.CiliumExecContext(context.TODO(), pod, fmt.Sprintf("cilium bpf nat list | grep %d", sourcePortForCTGCtest))
 	res.ExpectFail("NAT entry was not evicted")
 }
+
+func waitForServiceBackendPods(kubectl *helpers.Kubectl, podLabel string, expectedPodCount int) (pods []string) {
+	filter := "-l " + podLabel
+	err := kubectl.WaitforPods(helpers.DefaultNamespace, filter, helpers.HelperTimeout)
+	ExpectWithOffset(1, err).Should(BeNil(), "Pods [%s] failed to come up", podLabel)
+	pods, err = kubectl.GetPodNames(helpers.DefaultNamespace, podLabel)
+	ExpectWithOffset(1, err).Should(BeNil(), "Cannot retrieve pod names by filter %s", podLabel)
+	ExpectWithOffset(1, len(pods)).To(Equal(expectedPodCount), "Unexpected number of service backend pods")
+	podIPs, err := kubectl.GetPodsIPs(helpers.DefaultNamespace, podLabel)
+	ExpectWithOffset(1, err).Should(BeNil(), "Cannot retrieve pod IPs for %s", podLabel)
+	for _, ip := range podIPs {
+		err = kubectl.WaitForServiceBackend(helpers.K8s1, ip)
+		ExpectWithOffset(1, err).Should(BeNil(), "Failed waiting for %s backend entry on k8s1", ip)
+		err = kubectl.WaitForServiceBackend(helpers.K8s2, ip)
+		ExpectWithOffset(1, err).Should(BeNil(), "Failed waiting for %s backend entry on k8s2", ip)
+	}
+	return
+}
+
+// Helper function to install cilium, wait for cilium pod to complete regeneration,
+// and install an iptable rule on the node where cilium-agent is running.
+// This function is called in the context of NetfilterCompatMode verification.
+func installCiliumAndWaitForRegenerationToComplete(kubectl *helpers.Kubectl, ciliumFileName string,
+	options map[string]string, iptableRule string, isNetfilterCompatMode bool) {
+	if isNetfilterCompatMode {
+		options["netfilterCompatMode"] = "true"
+		DeployCiliumOptionsAndDNS(kubectl, ciliumFileName, options)
+	} else {
+		DeployCiliumAndDNS(kubectl, ciliumFileName)
+	}
+	ciliumPods, err := kubectl.GetCiliumPods()
+	Expect(err).To(BeNil(), "Cannot get cilium pods")
+	for _, cp := range ciliumPods {
+		// WaitForCiliumPodToCompleteRegeneration guarantees that endpoint regeneration completes,
+		// and the caller may proceed further to test functionalities. For example in NetfilterCompatibleMode
+		// the reverse DNAT for reply packet is done at bpf_host. Without NetfilterCompatibleMode enabled,
+		// the reverse DNAT for reply packet is done at bpf_lxc. If we don't wait for endpoint regeneration
+		// to complete, there may be race condition cases, where the reverse DNAT for reply packet
+		// may not be performed by both bpf_lxc and bpf_host.
+		// Hence, we need to wait for endpoint regeneration to complete on endpoints.
+		err := kubectl.WaitForCiliumPodToCompleteRegeneration(cp, 2*time.Minute)
+		res := kubectl.ExecPodCmd("kube-system", cp, iptableRule)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(res).Should(helpers.CMDSuccess(), "Request to program a iptable rule failed for pod %s", cp)
+	}
+}
