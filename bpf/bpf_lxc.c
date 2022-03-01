@@ -730,6 +730,7 @@ ct_recreate4:
 			 * rev-DNAT at egress of the native device.
 			 */
 			return CTX_ACT_OK;
+		}
 #endif /* NETFILTER_COMPAT_MODE */
 
 # ifdef ENABLE_DSR
