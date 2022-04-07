@@ -498,8 +498,8 @@ func probeCgroupSupportUDP(strict, ipv4 bool) error {
 // finishKubeProxyReplacementInit finishes initialization of kube-proxy
 // replacement after all devices are known.
 func finishKubeProxyReplacementInit(isKubeProxyReplacementStrict bool) error {
-	if option.Config.EnableNodePort {
-		if err := node.InitNodePortAddrs(option.Config.GetDevices(), option.Config.LBDevInheritIPAddr); err != nil {
+	if option.Config.EnableNodePort || option.Config.EnableWireguard {
+		if err := node.InitNodePortAddrs(option.Config.Devices, option.Config.LBDevInheritIPAddr); err != nil {
 			msg := "failed to initialize NodePort addrs."
 			if isKubeProxyReplacementStrict {
 				return fmt.Errorf(msg+" : %w", err)
