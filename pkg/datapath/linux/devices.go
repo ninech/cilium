@@ -466,6 +466,13 @@ func (dm *DeviceManager) expandDeviceWildcards(devices []string, option string) 
 	return expandedDevices, nil
 }
 
+func areDevicesRequired() bool {
+	return option.Config.EnableNodePort ||
+		option.Config.EnableHostFirewall ||
+		option.Config.EnableBandwidthManager ||
+		option.Config.EnableWireguard
+}
+
 func findK8SNodeIPLink() (netlink.Link, error) {
 	nodeIP := node.GetK8sNodeIP()
 
