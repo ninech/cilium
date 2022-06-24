@@ -374,18 +374,17 @@ ct_recreate6:
 
 #ifdef ENABLE_NODEPORT
 #ifdef NETFILTER_COMPAT_MODE
-		if (ct_state.node_port) {
+		if (ct_state->node_port) {
 			return CTX_ACT_OK;
 		}
 #endif /* NETFILTER_COMPAT_MODE */
-
-# ifdef ENABLE_DSR
+#ifdef ENABLE_DSR
 		if (ct_state->dsr) {
 			ret = xlate_dsr_v6(ctx, tuple, l4_off);
 			if (ret != 0)
 				return ret;
 		} else
-# endif /* ENABLE_DSR */
+#endif /* ENABLE_DSR */
 		/* See comment in handle_ipv4_from_lxc(). */
 		if (ct_state->node_port) {
 			send_trace_notify(ctx, TRACE_TO_NETWORK, SECLABEL,
@@ -867,7 +866,7 @@ ct_recreate4:
 
 #ifdef ENABLE_NODEPORT
 #ifdef NETFILTER_COMPAT_MODE
-		if (ct_state.node_port) {
+		if (ct_state->node_port) {
 			/* Pass the packet to the stack and let bpf_host perform
 			 * rev-DNAT at egress of the native device.
 			 */
