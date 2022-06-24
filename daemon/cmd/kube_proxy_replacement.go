@@ -500,7 +500,7 @@ func probeCgroupSupportUDP(strict, ipv4 bool) error {
 // replacement after all devices are known.
 func finishKubeProxyReplacementInit(isKubeProxyReplacementStrict bool) error {
 	if option.Config.EnableNodePort || option.Config.EnableWireguard {
-		if err := node.InitNodePortAddrs(option.Config.Devices, option.Config.LBDevInheritIPAddr); err != nil {
+		if err := node.InitNodePortAddrs(option.Config.GetDevices(), option.Config.LBDevInheritIPAddr); err != nil {
 			msg := "failed to initialize NodePort addrs."
 			if isKubeProxyReplacementStrict {
 				return fmt.Errorf(msg+" : %w", err)
@@ -541,7 +541,7 @@ func finishKubeProxyReplacementInit(isKubeProxyReplacementStrict bool) error {
 	if option.Config.EnableNodePort &&
 		option.Config.EnableWireguard && option.Config.EncryptNode {
 
-		option.Config.Devices = append(option.Config.Devices, wgTypes.IfaceName)
+		option.Config.SetDevices(append(option.Config.GetDevices(), wgTypes.IfaceName))
 	}
 
 	// For MKE, we only need to change/extend the socket LB behavior in case
