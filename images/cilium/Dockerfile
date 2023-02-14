@@ -3,6 +3,7 @@
 # Copyright 2020-2021 Authors of Cilium
 # SPDX-License-Identifier: Apache-2.0
 
+ARG CILIUM_1_12_IMAGE=quay.io/cilium/cilium:v1.12.6@sha256:454134506b0448c756398d3e8df68d474acde2a622ab58d0c7e8b272b5867d0d
 ARG CILIUM_BUILDER_IMAGE=quay.io/cilium/cilium-builder:9a155ecc5f39004a94e83d9ba895a33ccae3e56d@sha256:65a8ed6255f752c7590ba3cf436ad6c3350b83ba46f1cc368c2bf3321078f3bf
 ARG CILIUM_RUNTIME_IMAGE=quay.io/cilium/cilium-runtime:329f5b7debacb58d6b80f5117d3922fc4dc35344@sha256:16fab750aed13351f568fc5abde2b378165358c789486e77563fd428fe172806
 
@@ -64,6 +65,9 @@ COPY images/cilium/init-container.sh \
      plugins/cilium-cni/cni-uninstall.sh \
        /tmp/install/${TARGETOS}/${TARGETARCH}
 
+# define the cilium 1.12 image to copy helper binaries from
+FROM --platform=${BUILDPLATFORM} ${CILIUM_1_12_IMAGE} as cilium_1_12
+
 #
 # Cilium runtime install.
 #
@@ -89,6 +93,13 @@ COPY --from=hubble /out/${TARGETOS}/${TARGETARCH}/bin/hubble /usr/bin/hubble
 COPY --from=hubble /out/linux/bash_completion /etc/bash_completion.d/hubble
 
 COPY --from=builder /tmp/install/${TARGETOS}/${TARGETARCH} /
+
+# copy some static go binary files from cilium 1.12 into our image. These
+# binaries are used in more current cilium helm chart versions in the init
+# container section of the agent.
+COPY --from=cilium_1_12 /usr/bin/cilium-mount /usr/bin/cilium-mount
+COPY --from=cilium_1_12 /usr/bin/cilium-sysctlfix /usr/bin/cilium-sysctlfix
+
 WORKDIR /home/cilium
 
 ENV INITSYSTEM="SYSTEMD"
